@@ -1,0 +1,113 @@
+import java.util.ArrayList;
+
+// Interface: Payable
+interface Payable {
+    void processPayment(double amount);
+    String getPaymentStatus();
+}
+
+// Abstract Class: PaymentMethod
+abstract class PaymentMethod implements Payable {
+    protected String accountHolder;
+    protected double balance;
+
+    protected static int totalTransactions = 0;
+
+    public PaymentMethod(String accountHolder, double balance) {
+        this.accountHolder = accountHolder;
+        this.balance = balance;
+    }
+
+    public static int getTotalTransactions() {
+        return totalTransactions;
+    }
+
+    public abstract void validateAccount();
+}
+
+// Concrete Subclass: CreditCard
+class CreditCard extends PaymentMethod {
+    private double creditLimit;
+    private String paymentStatus = "Not processed";
+
+    public CreditCard(String accountHolder, double balance, double creditLimit) {
+        super(accountHolder, balance);
+        this.creditLimit = creditLimit;
+    }
+
+    @Override
+    public void validateAccount() {
+    }
+
+    @Override
+    public void processPayment(double amount) {
+        validateAccount();
+        if (amount > balance + creditLimit) {
+            System.out.println("Transaction Declined.");
+            paymentStatus = "Declined";
+        } else {
+            balance -= amount;
+            totalTransactions++;
+            paymentStatus = "Approved";
+        }
+    }
+
+    @Override
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+}
+
+// Concrete Subclass: MealPlan
+class MealPlan extends PaymentMethod {
+    private String paymentStatus = "Not processed";
+
+    public MealPlan(String accountHolder, double balance) {
+        super(accountHolder, balance);
+    }
+
+    @Override
+    public void validateAccount() {
+        if (balance < 0) {
+            System.out.println("Meal plan balance cannot be negative.");
+        }
+    }
+
+    @Override
+    public void processPayment(double amount) {
+        validateAccount();
+        if (amount > balance) {
+            System.out.println("Transaction Declined.");
+            paymentStatus = "Declined";
+        } else {
+            balance -= amount;
+            totalTransactions++;
+            paymentStatus = "Approved";
+        }
+    }
+
+    @Override
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+}
+
+// Main Class: LehmanCampusPaymentSystem
+public class LehmanCampusPaymentSystem {
+    public static void main(String[] args) {
+        ArrayList<Payable> paymentQueue = new ArrayList<>();
+
+        Payable cc = new CreditCard("Alice", 100.0, 200.0);
+        Payable mp = new MealPlan("Bob", 60.0);
+
+        paymentQueue.add(cc);
+        paymentQueue.add(mp);
+
+        for (Payable p : paymentQueue) {
+            p.processPayment(50.0);
+            System.out.println("Payment status: " + p.getPaymentStatus());
+        }
+
+        System.out.println("Total transactions: " + PaymentMethod.getTotalTransactions());
+    }
+}
