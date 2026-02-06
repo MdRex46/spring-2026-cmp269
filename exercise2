@@ -1,0 +1,149 @@
+import java.util.ArrayList;
+
+// Interfaces
+interface Powerable {
+    void turnOn();
+    void turnOff();
+}
+
+interface Adjustable {
+    void setLevel(int level);
+}
+
+// Abstract Class: SmartDevice
+abstract class SmartDevice implements Powerable {
+    protected String deviceName;
+    protected boolean isOn;
+
+    protected static int activeDevicesCount = 0;
+
+    public SmartDevice(String deviceName) {
+        this.deviceName = deviceName;
+        this.isOn = false;
+    }
+
+    public static int getActiveDevicesCount() {
+        return activeDevicesCount;
+    }
+
+    public abstract void performSelfDiagnostic();
+}
+
+// Concrete Subclass: SmartLight
+class SmartLight extends SmartDevice implements Adjustable {
+    private int brightness; // 0-100
+
+    public SmartLight(String deviceName) {
+        super(deviceName);
+        this.brightness = 0;
+    }
+
+    @Override
+    public void turnOn() {
+        if (!isOn) {
+            isOn = true;
+            activeDevicesCount++;
+        }
+    }
+
+    @Override
+    public void turnOff() {
+        if (isOn) {
+            isOn = false;
+            activeDevicesCount--;
+        }
+    }
+
+    @Override
+    public void setLevel(int level) {
+        if (!isOn) {
+            System.out.println("Cannot adjust: Device is OFF.");
+            return;
+        }
+        if (level < 0) {
+            level = 0;
+        }
+        if (level > 100) {
+            level = 100;
+        }
+        brightness = level;
+    }
+
+    @Override
+    public void performSelfDiagnostic() {
+        System.out.println(deviceName + ": Checking LED health...");
+    }
+}
+
+// Concrete Subclass: SmartThermostat
+class SmartThermostat extends SmartDevice implements Adjustable {
+    private int temperature;
+
+    public SmartThermostat(String deviceName) {
+        super(deviceName);
+        this.temperature = 70;
+    }
+
+    @Override
+    public void turnOn() {
+        System.out.println("HVAC System Starting...");
+        if (!isOn) {
+            isOn = true;
+            activeDevicesCount++;
+        }
+    }
+
+    @Override
+    public void turnOff() {
+        if (isOn) {
+            isOn = false;
+            activeDevicesCount--;
+        }
+    }
+
+    @Override
+    public void setLevel(int level) {
+        if (!isOn) {
+            System.out.println("Cannot adjust: Device is OFF.");
+            return;
+        }
+        if (level < 60) {
+            level = 60;
+        }
+        if (level > 80) {
+            level = 80;
+        }
+        temperature = level;
+    }
+
+    @Override
+    public void performSelfDiagnostic() {
+        System.out.println(deviceName + ": Running thermostat diagnostics...");
+    }
+}
+
+// Main Class: LehmanSmartHome
+public class LehmanSmartHome {
+    public static void main(String[] args) {
+        ArrayList<SmartDevice> homeHub = new ArrayList<>();
+
+        SmartLight livingRoomLight = new SmartLight("Living Room Light");
+        SmartLight kitchenLight = new SmartLight("Kitchen Light");
+        SmartThermostat hallwayThermostat = new SmartThermostat("Hallway Thermostat");
+
+        homeHub.add(livingRoomLight);
+        homeHub.add(kitchenLight);
+        homeHub.add(hallwayThermostat);
+
+        livingRoomLight.turnOn();
+        hallwayThermostat.turnOn();
+
+        kitchenLight.setLevel(75);
+
+        System.out.println("Active devices: " + SmartDevice.getActiveDevicesCount());
+
+        for (SmartDevice device : homeHub) {
+            device.performSelfDiagnostic();
+        }
+    }
+}
