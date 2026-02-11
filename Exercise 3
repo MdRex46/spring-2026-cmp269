@@ -1,0 +1,48 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.InputMismatchException;
+import java.util.Locale;
+import java.util.Scanner;
+
+public class GradebookProcessor {
+
+    public static void main(String[] args) {
+        File inputFile = new File("students.txt");
+        File outputFile = new File("grades_report.txt");
+
+        try (Scanner fileScanner = new Scanner(inputFile);
+             PrintWriter out = new PrintWriter(outputFile)) {
+
+            fileScanner.useLocale(Locale.US);
+
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine().trim();
+                if (line.isEmpty()) continue;
+                processLine(line, out);
+            }
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: Could not find students.txt (" + e.getMessage() + ")");
+        } finally {
+            System.out.println("Processing Complete");
+        }
+    }
+
+    private static void processLine(String line, PrintWriter out) {
+        try (Scanner lineScanner = new Scanner(line)) {
+            String name = lineScanner.next();
+
+            int s1 = lineScanner.nextInt();
+            int s2 = lineScanner.nextInt();
+            int s3 = lineScanner.nextInt();
+
+            double avg = (s1 + s2 + s3) / 3.0;
+
+            out.printf("Student: %s | Average: %.2f.%n", name, avg);
+
+        } catch (InputMismatchException e) {
+            System.out.println("Warning: Invalid data, skipping line -> " + line);
+        }
+    }
+}
