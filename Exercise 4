@@ -1,0 +1,58 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+
+public class RegistrationApp extends Application {
+
+    @Override
+    public void start(Stage primaryStage) {
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(20));
+        grid.setVgap(10);
+        grid.setHgap(10);
+
+        Label lblStudentName = new Label("Student Name:");
+        TextField txtStudentName = new TextField();
+        grid.add(lblStudentName, 0, 0);
+        grid.add(txtStudentName, 1, 0);
+
+        Label lblCourseCode = new Label("Course Code:");
+        ComboBox<String> cboCourseCode = new ComboBox<>();
+        cboCourseCode.getItems().addAll("CMP 269", "CMP 168", "CMP 167", "CIS 166");
+        grid.add(lblCourseCode, 0, 1);
+        grid.add(cboCourseCode, 1, 1);
+
+        Button btnRegister = new Button("Register");
+        grid.add(btnRegister, 1, 2);
+
+        Label lblStatus = new Label("");
+        grid.add(lblStatus, 0, 3, 2, 1);
+
+        btnRegister.setOnAction(e -> {
+            String name = txtStudentName.getText().trim();
+            String course = cboCourseCode.getValue();
+
+            if (name.isEmpty() || course == null || course.trim().isEmpty()) {
+                lblStatus.setText("Please enter your name and select a course code.");
+                return;
+            }
+
+            lblStatus.setText("Registration Successful for " + name + " in " + course + "!");
+        });
+
+        Scene scene = new Scene(grid, 400, 250);
+        primaryStage.setTitle("Lehman Course Registration");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
