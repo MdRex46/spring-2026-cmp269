@@ -1,1 +1,94 @@
+// Exercise 1: The "Greeting" Threads (Runnable Interface)
+// Goal: Practice creating and naming threads using the Runnable interface.
 
+public class GreeterTask implements Runnable {
+    @Override
+    public void run() {
+        for (int i = 0; i < 5; i++) {
+            System.out.println("Hello from " + Thread.currentThread().getName());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Thread t1 = new Thread(new GreeterTask(), "Lehman-Thread-1");
+        Thread t2 = new Thread(new GreeterTask(), "Lehman-Thread-2");
+        t1.start();
+        t2.start();
+    }
+}
+
+
+// Exercise 2: Visualizing Thread States
+// Goal: Catch a thread in different states using getState().
+
+public class ThreadStates {
+    public static void main(String[] args) throws InterruptedException {
+        Thread t = new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        System.out.println("State after creation: " + t.getState());   // NEW
+        t.start();
+        System.out.println("State after start(): " + t.getState());    // RUNNABLE
+        Thread.sleep(500);
+        System.out.println("State while sleeping: " + t.getState());   // TIMED_WAITING
+        t.join();
+        System.out.println("State after finished: " + t.getState());   // TERMINATED
+    }
+}
+
+
+// Exercise 3: The "Bank Account" Race Condition
+// Goal: Witness data corruption and fix it with synchronized.
+
+public class BankAccount {
+    private int balance = 1000;
+
+    public synchronized void withdraw(int amount) {
+        if (balance >= amount) {
+            System.out.println(Thread.currentThread().getName() + " is withdrawing $" + amount);
+            balance -= amount;
+            System.out.println(Thread.currentThread().getName() + " withdrew. New balance: $" + balance);
+        } else {
+            System.out.println(Thread.currentThread().getName() + " tried to withdraw $" + amount + " but balance is only $" + balance);
+        }
+    }
+
+    public static void main(String[] args) {
+        BankAccount account = new BankAccount();
+        Thread husband = new Thread(() -> account.withdraw(700), "Husband");
+        Thread wife    = new Thread(() -> account.withdraw(700), "Wife");
+        husband.start();
+        wife.start();
+    }
+}
+
+
+// Exercise 4: Coordination with join()
+// Goal: Ensure a main thread waits for children to finish.
+
+public class HeavyCalculation {
+    static long result = 0;
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread calcThread = new Thread(() -> {
+            for (long i = 0; i < 1_000_000_000L; i++) {
+                result++;
+            }
+        });
+
+        calcThread.start();
+        calcThread.join();
+
+        System.out.println("Calculation Finished: " + result);
+    }
+}
