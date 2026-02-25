@@ -1,34 +1,54 @@
-// Exercise 1: The "Greeting" Threads (Runnable Interface)
-// Goal: Practice creating and naming threads using the Runnable interface.
+/*
+ * Course:  CMP 269 - Spring 2026
+ * Exercise 5: Multi-threading in Java
+ * Topics: Runnable, Thread States, Race Conditions, join()
+ */
+
+
+/* ============================================================
+ * Exercise 1: The "Greeting" Threads (Runnable Interface)
+ * Goal: Practice creating and naming threads using Runnable.
+ * Each thread prints a greeting 5 times with a 500ms delay.
+ * ============================================================ */
 
 public class GreeterTask implements Runnable {
+
     @Override
     public void run() {
-        for (int i = 0; i < 5; i++) {
-            System.out.println("Hello from " + Thread.currentThread().getName());
+        for (int count = 0; count < 5; count++) {
+            String threadName = Thread.currentThread().getName();
+            System.out.println("Hello from " + threadName + " (message " + (count + 1) + ")");
             try {
-                Thread.sleep(500);
+                Thread.sleep(500); // pause 500ms between each greeting
             } catch (InterruptedException e) {
+                System.out.println(threadName + " was interrupted.");
                 e.printStackTrace();
             }
         }
     }
 
     public static void main(String[] args) {
-        Thread t1 = new Thread(new GreeterTask(), "Lehman-Thread-1");
-        Thread t2 = new Thread(new GreeterTask(), "Lehman-Thread-2");
-        t1.start();
-        t2.start();
+        // Create two named threads and start them — output will interleave
+        Thread thread1 = new Thread(new GreeterTask(), "Lehman-Thread-1");
+        Thread thread2 = new Thread(new GreeterTask(), "Lehman-Thread-2");
+        thread1.start();
+        thread2.start();
     }
 }
 
 
-// Exercise 2: Visualizing Thread States
-// Goal: Catch a thread in different states using getState().
+/* ============================================================
+ * Exercise 2: Visualizing Thread States
+ * Goal: Use getState() to observe a thread moving through
+ *       NEW -> RUNNABLE -> TIMED_WAITING -> TERMINATED
+ * ============================================================ */
 
 public class ThreadStates {
+
     public static void main(String[] args) throws InterruptedException {
-        Thread t = new Thread(() -> {
+
+        // Create a thread that sleeps for 2 seconds (but don't start it yet)
+        Thread sleeper = new Thread(() -> {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
@@ -36,59 +56,96 @@ public class ThreadStates {
             }
         });
 
-        System.out.println("State after creation: " + t.getState());   // NEW
-        t.start();
-        System.out.println("State after start(): " + t.getState());    // RUNNABLE
+        // Check state right after creation — should be NEW
+        System.out.println("[1] After creation  -> State: " + sleeper.getState());
+
+        sleeper.start();
+
+        // Check state right after start() — should be RUNNABLE
+        System.out.println("[2] After start()   -> State: " + sleeper.getState());
+
+        // Wait 500ms so the child thread is definitely asleep
         Thread.sleep(500);
-        System.out.println("State while sleeping: " + t.getState());   // TIMED_WAITING
-        t.join();
-        System.out.println("State after finished: " + t.getState());   // TERMINATED
+
+        // Should now be TIMED_WAITING (it's in the middle of its 2s sleep)
+        System.out.println("[3] While sleeping  -> State: " + sleeper.getState());
+
+        sleeper.join(); // wait for the sleeper to fully finish
+
+        // Should be TERMINATED now
+        System.out.println("[4] After finish    -> State: " + sleeper.getState());
     }
 }
 
 
-// Exercise 3: The "Bank Account" Race Condition
-// Goal: Witness data corruption and fix it with synchronized.
+/* ============================================================
+ * Exercise 3: The "Bank Account" Race Condition
+ * Goal: Show how two threads can corrupt shared data, then
+ *       fix the issue using the synchronized keyword.
+ * ============================================================ */
 
 public class BankAccount {
-    private int balance = 1000;
 
+    private int balance = 1000; // starting balance in dollars
+
+    /*
+     * Without synchronized, both threads can pass the balance
+     * check at the same time before either subtracts — causing
+     * the balance to go negative. The synchronized keyword
+     * ensures only one thread enters this method at a time.
+     */
     public synchronized void withdraw(int amount) {
+        String person = Thread.currentThread().getName();
+
         if (balance >= amount) {
-            System.out.println(Thread.currentThread().getName() + " is withdrawing $" + amount);
+            System.out.println(person + " approved  — withdrawing $" + amount);
             balance -= amount;
-            System.out.println(Thread.currentThread().getName() + " withdrew. New balance: $" + balance);
+            System.out.println(person + " done      — remaining balance: $" + balance);
         } else {
-            System.out.println(Thread.currentThread().getName() + " tried to withdraw $" + amount + " but balance is only $" + balance);
+            System.out.println(person + " denied    — not enough funds. Balance: $" + balance);
         }
     }
 
     public static void main(String[] args) {
         BankAccount account = new BankAccount();
+
+        // Both try to withdraw $700 from a $1000 account at the same time
         Thread husband = new Thread(() -> account.withdraw(700), "Husband");
         Thread wife    = new Thread(() -> account.withdraw(700), "Wife");
+
         husband.start();
         wife.start();
     }
 }
 
 
-// Exercise 4: Coordination with join()
-// Goal: Ensure a main thread waits for children to finish.
+/* ============================================================
+ * Exercise 4: Coordination with join()
+ * Goal: Make the main thread wait until the worker thread
+ *       finishes its heavy calculation before printing.
+ * ============================================================ */
 
 public class HeavyCalculation {
-    static long result = 0;
+
+    static long total = 0; // shared result variable
 
     public static void main(String[] args) throws InterruptedException {
-        Thread calcThread = new Thread(() -> {
+
+        // Worker thread: counts up to 1 billion
+        Thread worker = new Thread(() -> {
+            System.out.println("[Worker] Starting heavy calculation...");
             for (long i = 0; i < 1_000_000_000L; i++) {
-                result++;
+                total++;
             }
+            System.out.println("[Worker] Calculation complete.");
         });
 
-        calcThread.start();
-        calcThread.join();
+        worker.start();
 
-        System.out.println("Calculation Finished: " + result);
+        // join() blocks the main thread until worker is done
+        // Without this, main would print before the result is ready
+        worker.join();
+
+        System.out.println("Calculation Finished: " + total);
     }
 }
