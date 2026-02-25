@@ -1,14 +1,10 @@
 /*
  * Course:  CMP 269 - Spring 2026
  * Exercise 5: Multi-threading in Java
- * Topics: Runnable, Thread States, Race Conditions, join()
- */
+*/
 
 
-/* ============================================================
- * Exercise 1: The "Greeting" Threads (Runnable Interface)
- * Each thread prints a greeting 5 times with a 500ms delay.
- * ============================================================ */
+//Exercise 1: The "Greeting" Threads (Runnable Interface
 
 public class GreeterTask implements Runnable {
 
@@ -36,11 +32,8 @@ public class GreeterTask implements Runnable {
 }
 
 
-/* ============================================================
- * Exercise 2: Visualizing Thread States
- * Observing a thread move through:
- *   NEW -> RUNNABLE -> TIMED_WAITING -> TERMINATED
- * ============================================================ */
+//Exercise 2: Visualizing Thread States
+
 
 public class ThreadStates {
 
@@ -77,11 +70,8 @@ public class ThreadStates {
 }
 
 
-/* ============================================================
- * Exercise 3: The "Bank Account" Race Condition
- * Two threads try to withdraw from the same account.
- * synchronized ensures only one thread runs at a time.
- * ============================================================ */
+
+//Exercise 3: The "Bank Account" Race Condition
 
 public class BankAccount {
 
@@ -118,11 +108,9 @@ public class BankAccount {
 }
 
 
-/* ============================================================
- * Exercise 4: Coordination with join()
- * The main thread waits for the worker to finish
- * before printing the final result.
- * ============================================================ */
+
+//Exercise 4: Coordination with join()
+
 
 public class HeavyCalculation {
 
