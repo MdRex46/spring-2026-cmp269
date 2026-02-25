@@ -7,7 +7,6 @@
 
 /* ============================================================
  * Exercise 1: The "Greeting" Threads (Runnable Interface)
- * Goal: Practice creating and naming threads using Runnable.
  * Each thread prints a greeting 5 times with a 500ms delay.
  * ============================================================ */
 
@@ -39,8 +38,8 @@ public class GreeterTask implements Runnable {
 
 /* ============================================================
  * Exercise 2: Visualizing Thread States
- * Goal: Use getState() to observe a thread moving through
- *       NEW -> RUNNABLE -> TIMED_WAITING -> TERMINATED
+ * Observing a thread move through:
+ *   NEW -> RUNNABLE -> TIMED_WAITING -> TERMINATED
  * ============================================================ */
 
 public class ThreadStates {
@@ -80,8 +79,8 @@ public class ThreadStates {
 
 /* ============================================================
  * Exercise 3: The "Bank Account" Race Condition
- * Goal: Show how two threads can corrupt shared data, then
- *       fix the issue using the synchronized keyword.
+ * Two threads try to withdraw from the same account.
+ * synchronized ensures only one thread runs at a time.
  * ============================================================ */
 
 public class BankAccount {
@@ -121,8 +120,8 @@ public class BankAccount {
 
 /* ============================================================
  * Exercise 4: Coordination with join()
- * Goal: Make the main thread wait until the worker thread
- *       finishes its heavy calculation before printing.
+ * The main thread waits for the worker to finish
+ * before printing the final result.
  * ============================================================ */
 
 public class HeavyCalculation {
