@@ -1,0 +1,91 @@
+// ===== Test class: AppTest.java =====
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class AppTest {
+
+    @Test
+    @DisplayName("Grade 70 should return true for passing")
+    void testPassingGrade() {
+        LehmanGradeBook book = new LehmanGradeBook();
+        assertTrue(book.isPassing(70), "A grade of 70 should pass.");
+    }
+
+    @Test
+    @DisplayName("High score maps to letter A")
+    void testLetterGradeHighA() {
+        LehmanGradeBook book = new LehmanGradeBook();
+        assertEquals('A', book.getLetterGrade(95));
+    }
+
+    @Test
+    @DisplayName("Low failing score maps to letter F")
+    void testLetterGradeLowF() {
+        LehmanGradeBook book = new LehmanGradeBook();
+        assertEquals('F', book.getLetterGrade(50));
+    }
+
+    @Test
+    @DisplayName("Score 90 is the lower bound for A")
+    void testBoundaryA() {
+        LehmanGradeBook book = new LehmanGradeBook();
+        assertEquals('A', book.getLetterGrade(90));
+    }
+
+    @Test
+    @DisplayName("Score 80 is the lower bound for B")
+    void testBoundaryB() {
+        LehmanGradeBook book = new LehmanGradeBook();
+        assertEquals('B', book.getLetterGrade(80));
+    }
+
+    @Test
+    @DisplayName("Score 70 is the lower bound for C")
+    void testBoundaryC() {
+        LehmanGradeBook book = new LehmanGradeBook();
+        assertEquals('C', book.getLetterGrade(70));
+    }
+
+    @Test
+    @DisplayName("Invalid grades outside 0–100 cause an exception")
+    void testInvalidGradeThrowsException() {
+        LehmanGradeBook book = new LehmanGradeBook();
+        assertThrows(IllegalArgumentException.class, () -> book.isPassing(150));
+    }
+}
+
+
+// ===== Main class: LehmanGradeBook.java =====
+
+public class LehmanGradeBook {
+
+    public boolean isPassing(int grade) {
+        ensureValidRange(grade);
+        return grade >= 70;
+    }
+
+    public char getLetterGrade(int score) {
+        ensureValidRange(score);
+
+        if (score >= 90) {
+            return 'A';
+        } else if (score >= 80) {
+            return 'B';
+        } else if (score >= 70) {
+            return 'C';
+        } else if (score >= 60) {
+            return 'D';
+        } else {
+            return 'F';
+        }
+    }
+
+    private void ensureValidRange(int value) {
+        if (value < 0 || value > 100) {
+            throw new IllegalArgumentException("Grade must be between 0 and 100.");
+        }
+    }
+}
