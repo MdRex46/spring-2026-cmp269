@@ -11,9 +11,13 @@ import java.io.*;
 import java.net.Socket;
 
 public class ChatApp extends Application {
-    private TextArea chatArea = new TextArea();
-    private TextField input = new TextField(), nameField = new TextField(), hostField = new TextField("localhost");
-    private Button sendBtn = new Button("Send"), connectBtn = new Button("Connect");
+    private final TextArea chatArea = new TextArea();
+    private final TextField inputField = new TextField();
+    private final TextField nameField = new TextField();
+    private final TextField hostField = new TextField("localhost");
+    private final Button sendButton = new Button("Send");
+    private final Button connectButton = new Button("Connect");
+    
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
@@ -21,84 +25,117 @@ public class ChatApp extends Application {
     @Override
     public void start(Stage stage) {
         chatArea.setEditable(false);
-        input.setPromptText("Message...");
-        input.setDisable(true); sendBtn.setDisable(true);
+        inputField.setPromptText("Message...");
+        inputField.setDisable(true);
+        sendButton.setDisable(true);
         
-        connectBtn.setOnAction(e -> connect());
-        sendBtn.setOnAction(e -> send());
-        input.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ENTER) send(); });
-        stage.setOnCloseRequest(e -> close());
+        connectButton.setOnAction(e -> connect());
+        sendButton.setOnAction(e -> sendMessage());
+        inputField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                sendMessage();
+            }
+        });
+        stage.setOnCloseRequest(e -> closeConnection());
         
-        HBox connectBox = new HBox(5, new Label("Name:"), nameField, 
-                new Label("Host:"), hostField, connectBtn);
+        HBox connectBox = new HBox(5, 
+            new Label("Name:"), nameField, 
+            new Label("Host:"), hostField, 
+            connectButton);
         connectBox.setPadding(new Insets(10));
         
-        HBox inputBox = new HBox(5, input, sendBtn);
+        HBox inputBox = new HBox(5, inputField, sendButton);
         inputBox.setPadding(new Insets(10));
         
-        BorderPane root = new BorderPane(chatArea, null, null, inputBox, connectBox);
+        BorderPane root = new BorderPane();
+        root.setTop(connectBox);
+        root.setCenter(chatArea);
+        root.setBottom(inputBox);
+        
         stage.setScene(new Scene(root, 500, 400));
         stage.setTitle("Lehman Chat Client");
         stage.show();
     }
     
     private void connect() {
-        String name = nameField.getText().trim(), host = hostField.getText().trim();
-        if (name.isEmpty() || host.isEmpty()) return;
+        String name = nameField.getText().trim();
+        String host = hostField.getText().trim();
+        if (name.isEmpty() || host.isEmpty()) {
+            return;
+        }
         
         try {
             socket = new Socket(host, 59001);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
-            // Server name prompt
-            append("SERVER: " + in.readLine());
+            // Server name prompt - FIXED: proper String handling
+            String serverPrompt = in.readLine();
+            chatArea.appendText(serverPrompt + "\n");
+            
             out.println(name);
             
             // Background listener thread
-            new Thread(this::listen).setDaemon(true).start();
+            Thread listener = new Thread(this::listenForMessages);
+            listener.setDaemon(true);
+            listener.start();
             
-            input.setDisable(false); sendBtn.setDisable(false); connectBtn.setDisable(true);
-            append("Connected as " + name);
+            inputField.setDisable(false);
+            sendButton.setDisable(false);
+            connectButton.setDisable(true);
+            chatArea.appendText("Connected as " + name + "\n");
         } catch (IOException e) {
-            append("Connect failed: " + e.getMessage());
+            chatArea.appendText("Connect failed: " + e.getMessage() + "\n");
         }
     }
     
-    private void listen() {
+    private void listenForMessages() {
         try {
             String line;
             while ((line = in.readLine()) != null) {
-                Platform.runLater(() -> append(line));
+                final String finalLine = line;  // FIXED: final for lambda
+                Platform.runLater(() -> chatArea.appendText(finalLine + "\n"));
             }
         } catch (IOException e) {
-            Platform.runLater(() -> append("Disconnected."));
+            final String finalError = "Disconnected: " + e.getMessage();
+            Platform.runLater(() -> chatArea.appendText(finalError + "\n"));
         } finally {
-            Platform.runLater(this::close);
+            Platform.runLater(this::closeConnection);
         }
     }
     
-    private void send() {
-        String text = input.getText().trim();
-        if (!text.isEmpty()) {
-            out.println(text);
-            input.clear();
+    private void sendMessage() {
+        String text = inputField.getText().trim();
+        if (text.isEmpty() || out == null) {
+            return;
         }
+        out.println(text);
+        inputField.clear();
     }
     
-    private void append(String msg) {
-        chatArea.appendText(msg + "\n");
-    }
-    
-    private void close() {
-        input.setDisable(true); sendBtn.setDisable(true); connectBtn.setDisable(false);
+    private void closeConnection() {
+        inputField.setDisable(true);
+        sendButton.setDisable(true);
+        connectButton.setDisable(false);
         try {
-            if (in != null) in.close();
-            if (out != null) out.close();
-            if (socket != null) socket.close();
-        } catch (IOException ignored) {}
-        in = out = null; socket = null;
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            // ignore
+        }
+        in = null;
+        out = null;
+        socket = null;
     }
     
-    public static void main(String[] args) { launch(args); }
+    public static void main(String[] args) {
+        launch(args);
+    }
 }
