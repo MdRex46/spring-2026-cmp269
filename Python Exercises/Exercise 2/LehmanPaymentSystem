@@ -1,0 +1,116 @@
+# CMP 269: Programming Methods III
+#
+# The Scenario: "Lehman Campus Payment System"
+# The college needs a new system to handle different types of payments
+# (Credit Cards, Meal Plans, and Financial Aid).
+
+# Exercise 1: Interface using a base class with pass methods
+class Payable:
+    def processPayment(self, amount: float):
+        pass
+
+    def getPaymentStatus(self) -> str:
+        pass
+
+
+# Exercise 2: Inheritance and super()
+class PaymentMethod(Payable):
+    totalTransactions = 0  # Class-level variable shared across all instances
+
+    def __init__(self, accountHolder: str, balance: float):
+        self._accountHolder = accountHolder
+        self._balance = balance
+
+    @staticmethod
+    def validateAccount(balance: float) -> bool:
+        return balance >= 0
+
+
+class CreditCard(PaymentMethod):
+    def __init__(self, accountHolder: str, balance: float, creditLimit: float):
+        super().__init__(accountHolder, balance)
+        self.__creditLimit = creditLimit
+
+    def processPayment(self, amount: float):
+        if amount > self._balance + self.__creditLimit:
+            print(f"Transaction Declined for {self._accountHolder}.")
+        else:
+            self._balance -= amount
+            PaymentMethod.totalTransactions += 1
+            print(f"Transaction Accepted for {self._accountHolder}. New balance: ${self._balance}")
+
+    def getPaymentStatus(self) -> str:
+        return f"{self._accountHolder} | Balance: ${self._balance} | Credit Limit: ${self.__creditLimit}"
+
+
+class MealPlan(PaymentMethod):
+    def __init__(self, accountHolder: str, balance: float, mealsRemaining: int):
+        super().__init__(accountHolder, balance)
+        self.__mealsRemaining = mealsRemaining
+
+    def processPayment(self, amount: float):
+        if self.__mealsRemaining <= 0 or amount > self._balance:
+            print(f"Meal Plan payment declined for {self._accountHolder}.")
+        else:
+            self._balance -= amount
+            self.__mealsRemaining -= 1
+            PaymentMethod.totalTransactions += 1
+            print(f"Meal deducted for {self._accountHolder}. Meals left: {self.__mealsRemaining}")
+
+    def getPaymentStatus(self) -> str:
+        return f"{self._accountHolder} | Balance: ${self._balance} | Meals Remaining: {self.__mealsRemaining}"
+
+
+class FinancialAid(PaymentMethod):
+    def __init__(self, accountHolder: str, balance: float, aidType: str):
+        super().__init__(accountHolder, balance)
+        self.__aidType = aidType
+
+    def processPayment(self, amount: float):
+        if amount > self._balance:
+            print(f"Financial Aid payment declined for {self._accountHolder}.")
+        else:
+            self._balance -= amount
+            PaymentMethod.totalTransactions += 1
+            print(f"Financial Aid payment processed for {self._accountHolder}. Remaining: ${self._balance}")
+
+    def getPaymentStatus(self) -> str:
+        return f"{self._accountHolder} | Aid Type: {self.__aidType} | Remaining Balance: ${self._balance}"
+
+
+# Exercise 3: Polymorphism (Duck Typing)
+def exercise_3_polymorphism():
+    """
+    Goal: Demonstrate Duck Typing.
+    Notice how this function doesn't care about the object's class,
+    only that it has processPayment() and getPaymentStatus() methods!
+    """
+    print("\n--- Exercise 3: Polymorphism (Duck Typing) ---")
+
+    card = CreditCard("Alice", 500.00, 1000.00)
+    meal = MealPlan("Bob", 300.00, 20)
+    aid  = FinancialAid("Charlie", 5000.00, "Pell Grant")
+
+    paymentMethods = [card, meal, aid]
+
+    for payment in paymentMethods:
+        print(payment.getPaymentStatus())
+        payment.processPayment(150.00)
+
+    print(f"\nTotal Transactions: {PaymentMethod.totalTransactions}")
+
+
+if __name__ == "__main__":
+    print("--- Exercise 1 & 2: Classes and Inheritance ---")
+
+    card = CreditCard("John Doe", 200.00, 800.00)
+    meal = MealPlan("Jane Smith", 400.00, 30)
+
+    print(card.getPaymentStatus())
+    card.processPayment(900.00)  # Accepted — balance + credit covers it
+    card.processPayment(200.00)  # Declined — exceeds balance + limit
+
+    print(meal.getPaymentStatus())
+    meal.processPayment(10.00)
+
+    exercise_3_polymorphism()
