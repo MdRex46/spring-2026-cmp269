@@ -1,0 +1,57 @@
+# --- Exercise 1: The "Lehman Course" Class ---
+class LehmanCourse:
+    def __init__(self, course_name, credits):
+        self.course_name = course_name
+        self.credits = credits
+        self._student_count = 0  # Protected variable
+
+    def enroll_student(self):
+        self._student_count += 1
+
+    def display_info(self):
+        print(f"Course: {self.course_name} | Credits: {self.credits} | Enrollment: {self._student_count}")
+
+
+# --- Exercise 2: Specialized Inheritance ---
+class LabCourse(LehmanCourse):
+    def __init__(self, course_name, credits, lab_fee):
+        super().__init__(course_name, credits)  # Call parent logic
+        self.lab_fee = lab_fee
+
+    def display_info(self):
+        # Override to include lab_fee in the output
+        print(f"Course: {self.course_name} | Credits: {self.credits} | "
+              f"Lab Fee: ${self.lab_fee} | Enrollment: {self._student_count}")
+
+
+# --- Exercise 3: Duck Typing Demonstration ---
+class Professor:
+    def get_role(self):
+        return "Teaching and Research"
+
+class Student:
+    def get_role(self):
+        return "Learning and Coding"
+
+def print_role(person):
+    # Polymorphism: works with any object that implements get_role()
+    print(person.get_role())
+
+
+# Execution Logic
+if __name__ == "__main__":
+    # Testing Exercise 1
+    my_course = LehmanCourse("Computer Science 101", 3)
+    my_course.enroll_student()
+    my_course.display_info()
+
+    # Testing Exercise 2
+    my_lab = LabCourse("Chemistry Lab", 2, 50)
+    my_lab.enroll_student()
+    my_lab.display_info()
+
+    # Testing Exercise 3
+    prof = Professor()
+    stu = Student()
+    print_role(prof)
+    print_role(stu)
